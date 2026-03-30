@@ -1,55 +1,45 @@
-import { GoogleGenAI, Type } from "@google/genai";
-import { Todo, Suggestion } from "../types";
+import { GoogleGenAI } from "@google/genai";
+import { LogEntry } from "../types";
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+let aiInstance: GoogleGenAI | null = null;
 
-export async function getPlannerSuggestions(todos: Todo[]): Promise<Suggestion[]> {
+function getAI() {
+  if (!aiInstance) {
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      throw new Error("GEMINI_API_KEY is not defined. Please set it in your environment.");
+    }
+    aiInstance = new GoogleGenAI({ apiKey });
+  }
+  return aiInstance;
+}
+
+export async function analyzeLogs(logs: LogEntry[]): Promise<string> {
   const model = "gemini-3-flash-preview";
   
-  const todoList = todos.map(t => `- [${t.completed ? 'x' : ' '}] ${t.text} (${t.category})`).join('\n');
+  const logContent = logs.map(l => `[${l.timestamp}] [${l.level}] [${l.service}] ${l.message}`).join('\n');
   
   const prompt = `
-    I have the following todo list:
-    ${todoList || "No tasks yet."}
+    You are a Senior Site Reliability Engineer (SRE). 
+    Analyze the following system logs and provide a concise summary of the system health.
+    Identify any critical issues and suggest immediate remediation steps.
     
-    Based on these tasks, suggest 3-4 new tasks or improvements to my day. 
-    Focus on a "natural feel" - balance work with personal well-being, health, and mindfulness.
-    If I have too many work tasks, suggest a break or a health-related task.
-    If I have no tasks, suggest some starting points for a productive yet balanced day.
+    LOGS:
+    ${logContent}
     
-    Return the suggestions in a JSON format.
+    Provide a professional, technical summary in Markdown format.
   `;
 
   try {
+    const ai = getAI();
     const response = await ai.models.generateContent({
       model,
       contents: prompt,
-      config: {
-        responseMimeType: "application/json",
-        responseSchema: {
-          type: Type.ARRAY,
-          items: {
-            type: Type.OBJECT,
-            properties: {
-              title: { type: Type.STRING },
-              description: { type: Type.STRING },
-              reason: { type: Type.STRING },
-              category: { 
-                type: Type.STRING,
-                enum: ['work', 'personal', 'health', 'other']
-              }
-            },
-            required: ["title", "description", "reason", "category"]
-          }
-        }
-      }
     });
 
-    const text = response.text;
-    if (!text) return [];
-    return JSON.parse(text);
+    return response.text || "Unable to analyze logs at this time.";
   } catch (error) {
-    console.error("Error getting suggestions:", error);
-    return [];
+    console.error("Error analyzing logs:", error);
+    return error instanceof Error ? error.message : "Error during log analysis.";
   }
 }

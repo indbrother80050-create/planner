@@ -1,5 +1,5 @@
 {
-  "name": "Bloom Planner",
-  "description": "A natural, organic todo list and daily planner that suggests tasks and organizes your day using AI.",
+  "name": "Sentinel QA: Production Monitoring & Testing Suite",
+  "description": "A production-grade dashboard for monitoring system health, running automated test suites, and tracking deployment status with real-time analytics.",
   "requestFramePermissions": []
 }

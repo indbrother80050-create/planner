@@ -1,20 +1,37 @@
-export interface Todo {
+export enum ServiceStatus {
+  OPERATIONAL = "OPERATIONAL",
+  DEGRADED = "DEGRADED",
+  OUTAGE = "OUTAGE",
+  MAINTENANCE = "MAINTENANCE",
+}
+
+export interface Service {
   id: string;
-  text: string;
-  completed: boolean;
-  category: 'work' | 'personal' | 'health' | 'other';
-  createdAt: number;
+  name: string;
+  status: ServiceStatus;
+  latency: number;
+  uptime: number;
+  lastChecked: string;
 }
 
-export interface Suggestion {
-  title: string;
-  description: string;
-  reason: string;
-  category: Todo['category'];
+export interface TestResult {
+  id: string;
+  name: string;
+  status: "PASSED" | "FAILED" | "PENDING";
+  duration: number;
+  timestamp: string;
+  error?: string;
 }
 
-export interface PlannerState {
-  todos: Todo[];
-  suggestions: Suggestion[];
-  isGenerating: boolean;
+export interface MetricPoint {
+  time: string;
+  value: number;
+}
+
+export interface LogEntry {
+  id: string;
+  timestamp: string;
+  level: "INFO" | "WARN" | "ERROR";
+  message: string;
+  service: string;
 }
