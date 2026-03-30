@@ -58,7 +58,7 @@ const App: React.FC = () => {
         <div className="absolute inset-0 pointer-events-none opacity-[0.03]" 
              style={{ backgroundImage: 'radial-gradient(#141414 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
         
-        <div className="relative z-10">
+        <div className="relative z-10 w-full min-w-0">
           {renderContent()}
         </div>
       </main>

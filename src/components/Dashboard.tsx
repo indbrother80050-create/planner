@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { 
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area 
 } from "recharts";
@@ -25,8 +25,14 @@ const MOCK_METRICS: MetricPoint[] = [
 ];
 
 const Dashboard: React.FC = () => {
+  const [isMounted, setIsMounted] = useState(false);
+
+  React.useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   return (
-    <div className="p-8 space-y-8 animate-in fade-in duration-500">
+    <div className="p-8 space-y-8 animate-in fade-in duration-500 w-full min-w-0">
       <header className="flex justify-between items-end border-b border-ink pb-6">
         <div>
           <h2 className="text-3xl font-bold tracking-tighter uppercase">System Overview</h2>
@@ -60,9 +66,9 @@ const Dashboard: React.FC = () => {
       </div>
 
       {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 w-full min-w-0">
         {/* Services List */}
-        <div className="lg:col-span-2 space-y-4">
+        <div className="lg:col-span-2 space-y-4 min-w-0">
           <div className="flex justify-between items-center mb-2">
             <h3 className="text-xs uppercase tracking-widest font-bold font-mono opacity-50 italic">Service Status</h3>
             <button className="text-[10px] uppercase font-bold hover:underline">View All Services</button>
@@ -91,42 +97,48 @@ const Dashboard: React.FC = () => {
         </div>
 
         {/* Latency Chart */}
-        <div className="space-y-4">
+        <div className="space-y-4 min-w-0 w-full">
           <h3 className="text-xs uppercase tracking-widest font-bold font-mono opacity-50 italic">Network Throughput</h3>
-          <div className="h-[300px] border border-ink p-4 bg-bg">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={MOCK_METRICS}>
-                <defs>
-                  <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#141414" stopOpacity={0.1}/>
-                    <stop offset="95%" stopColor="#141414" stopOpacity={0}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#141414" strokeOpacity={0.1} />
-                <XAxis 
-                  dataKey="time" 
-                  axisLine={false} 
-                  tickLine={false} 
-                  tick={{ fontSize: 10, fontFamily: 'JetBrains Mono', fill: '#141414' }} 
-                />
-                <YAxis 
-                  hide 
-                />
-                <Tooltip 
-                  contentStyle={{ backgroundColor: '#141414', border: 'none', borderRadius: '0', color: '#E4E3E0' }}
-                  itemStyle={{ color: '#E4E3E0', fontSize: '10px', fontFamily: 'JetBrains Mono' }}
-                  labelStyle={{ display: 'none' }}
-                />
-                <Area 
-                  type="monotone" 
-                  dataKey="value" 
-                  stroke="#141414" 
-                  strokeWidth={2}
-                  fillOpacity={1} 
-                  fill="url(#colorValue)" 
-                />
-              </AreaChart>
-            </ResponsiveContainer>
+          <div className="min-h-[300px] w-full border border-ink p-4 bg-bg relative overflow-hidden">
+            {isMounted ? (
+              <ResponsiveContainer width="100%" height={300} minWidth={0} debounce={50}>
+                <AreaChart data={MOCK_METRICS}>
+                  <defs>
+                    <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#141414" stopOpacity={0.1}/>
+                      <stop offset="95%" stopColor="#141414" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#141414" strokeOpacity={0.1} />
+                  <XAxis 
+                    dataKey="time" 
+                    axisLine={false} 
+                    tickLine={false} 
+                    tick={{ fontSize: 10, fontFamily: 'JetBrains Mono', fill: '#141414' }} 
+                  />
+                  <YAxis 
+                    hide 
+                  />
+                  <Tooltip 
+                    contentStyle={{ backgroundColor: '#141414', border: 'none', borderRadius: '0', color: '#E4E3E0' }}
+                    itemStyle={{ color: '#E4E3E0', fontSize: '10px', fontFamily: 'JetBrains Mono' }}
+                    labelStyle={{ display: 'none' }}
+                  />
+                  <Area 
+                    type="monotone" 
+                    dataKey="value" 
+                    stroke="#141414" 
+                    strokeWidth={2}
+                    fillOpacity={1} 
+                    fill="url(#colorValue)" 
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="w-full h-full flex items-center justify-center opacity-20">
+                <span className="text-[10px] uppercase tracking-widest animate-pulse">Initializing Chart Engine...</span>
+              </div>
+            )}
           </div>
           <div className="p-4 border border-ink bg-ink text-bg">
             <div className="flex items-center gap-2 mb-2">
